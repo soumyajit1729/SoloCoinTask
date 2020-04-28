@@ -11,6 +11,7 @@
             android:id="@+id/btn"
             android:layout_height="wrap_content"
             android:textAllCaps="false"
+            android:background="@drawable/start_button"
             android:text="Reset points"/>
         <TextView
             android:id="@+id/textView1"
@@ -19,14 +20,14 @@
             android:layout_weight="1"
             android:gravity="center"
             android:textSize="20dp"
-            android:text="Time Interval: 1s " />
+            android:text="Time Interval: 2s " />
         <TextView
             android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:textSize="25dp"
+            android:textSize="20dp"
             android:text="Points: 0 " />
 
     </LinearLayout>

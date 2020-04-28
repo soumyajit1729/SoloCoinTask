@@ -37,6 +37,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
 
     private GoogleMap mMap;
@@ -45,7 +48,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final String TAG = "MapsActivity";
     private GeofenceHelper geofenceHelper;
     private TextView pointV, time;
-    private float GEOFENCE_RADIUS = 5;
+    private float GEOFENCE_RADIUS = 100;
+    int score;
     private String GEOFENCE_ID = "SOME_GEOFENCE_ID";
 
     private int FINE_LOCATION_ACCESS_REQUEST_CODE = 10001;
@@ -56,11 +60,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         pointV = (TextView)findViewById(R.id.textView);
-        final DatabaseReference setPoint = FirebaseDatabase.getInstance().getReference().child("Points").child("score");
+        final DatabaseReference setPoint = FirebaseDatabase.getInstance().getReference().child("Points");
         setPoint.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                int point = dataSnapshot.getValue(Points.class).getScore() + 10;
+                int point = dataSnapshot.getValue(Points.class).getScore();
                 pointV.setText("Points: " + String.valueOf(point));
             }
 
@@ -82,10 +86,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DatabaseReference addPoint = FirebaseDatabase.getInstance().getReference().child("Points");
+                DatabaseReference addPoint = FirebaseDatabase.getInstance().getReference().child("Points").child("score");
                 addPoint.setValue(0);
+                score = 0;
                 }
         });
+
+
     }
 
 
@@ -168,6 +175,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         } else {
             handleMapLongClick(latLng);
         }
+        final long period = 2000;
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                DatabaseReference isExit = FirebaseDatabase.getInstance().getReference().child("exit");
+                isExit.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.getValue(Exit.class).getValue()){
+                            score = score-10;
+                        }else {
+                            score = score+10;
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+                DatabaseReference scoreset = FirebaseDatabase.getInstance().getReference().child("Points").child("score");
+                scoreset.setValue(score);
+            }
+        }, 0, period);
 
     }
 
