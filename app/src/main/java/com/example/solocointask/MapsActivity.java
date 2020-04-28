@@ -14,6 +14,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.Geofence;
@@ -29,8 +31,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
 
@@ -39,7 +44,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private int CODE = 10001;
     private static final String TAG = "MapsActivity";
     private GeofenceHelper geofenceHelper;
-
+    private TextView pointV, time;
     private float GEOFENCE_RADIUS = 5;
     private String GEOFENCE_ID = "SOME_GEOFENCE_ID";
 
@@ -50,8 +55,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        final DatabaseReference check = FirebaseDatabase.getInstance().getReference("Points").child("Points123").child("1");
-        check.setValue(120);
+        pointV = (TextView)findViewById(R.id.textView);
+        final DatabaseReference setPoint = FirebaseDatabase.getInstance().getReference().child("Points").child("score");
+        setPoint.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                int point = dataSnapshot.getValue(Points.class).getScore() + 10;
+                pointV.setText("Points: " + String.valueOf(point));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
         NotificationHelper notificationHelper = new NotificationHelper(this);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -65,7 +82,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                DatabaseReference addPoint = FirebaseDatabase.getInstance().getReference().child("Points");
+                addPoint.setValue(0);
                 }
         });
     }
